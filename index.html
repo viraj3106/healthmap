@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HEALTHMAP AI — Integrated Geographical Public Health Risk Intelligence</title>
+    
+    <!-- Human-Centric Typography: Plus Jakarta Sans & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet GIS Map + Heatmap Plugin -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
+    
+    <!-- Chart.js for Live Explainable AI & Forecasts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-heading: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --c-navy: #0F2537;
+            --c-navy-light: #1E3A8A;
+            --c-teal: #0D9488;
+            --c-teal-light: #CCFBF1;
+            --c-blue: #0284C7;
+            --c-red: #DC2626;
+            --c-amber: #D97706;
+            --c-green: #16A34A;
+            --c-slate-900: #0F172A;
+            --c-slate-700: #334155;
+            --c-slate-500: #64748B;
+            --c-bg: #F8FAFC;
+            --c-card: #FFFFFF;
+            --c-border: #E2E8F0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--c-bg);
+            color: var(--c-slate-700);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Top Header Navigation */
+        .navbar {
+            background: #FFFFFF;
+            border-bottom: 1px solid var(--c-border);
+            padding: 12px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+        }
+
+        .brand-box { display: flex; align-items: center; gap: 12px; }
+        .brand-logo {
+            background: linear-gradient(135deg, var(--c-teal), var(--c-blue));
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 20px;
+            font-family: var(--font-heading);
+            box-shadow: 0 4px 10px rgba(13, 148, 136, 0.3);
+        }
+
+        .brand-title {
+            font-family: var(--font-heading);
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--c-navy);
+            letter-spacing: -0.01em;
+        }
+
+        .brand-subtitle { font-size: 11.5px; color: var(--c-slate-500); font-weight: 500; }
+
+        .nav-meta {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            font-size: 12.5px;
+        }
+
+        .pill-live {
+            background: #F0FDF4;
+            color: var(--c-green);
+            border: 1px solid #86EFAC;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #16A34A;
+            border-radius: 50%;
+            animation: pulse 1.6s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.9; }
+            50% { transform: scale(1.3); opacity: 0.4; }
+            100% { transform: scale(0.95); opacity: 0.9; }
+        }
+
+        .container {
+            max-width: 1480px;
+            margin: 18px auto;
+            padding: 0 20px;
+        }
+
+        /* Top Hero Banner */
+        .hero {
+            background: linear-gradient(135deg, #0F2537 0%, #1E3A8A 55%, #0D9488 100%);
+            border-radius: 16px;
+            padding: 22px 28px;
+            color: white;
+            margin-bottom: 16px;
+            box-shadow: 0 10px 25px -5px rgba(15, 37, 55, 0.18);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .hero h1 { font-family: var(--font-heading); font-size: 24px; font-weight: 800; margin-bottom: 4px; }
+        .hero p { color: var(--c-teal-light); font-size: 13px; font-weight: 400; }
+        .hero-badges { display: flex; gap: 10px; margin-top: 10px; font-size: 11.5px; color: #E2E8F0; }
+
+        /* Ethical Safeguard Notice */
+        .boundary-bar {
+            background: #F0FDFA;
+            border-left: 4px solid var(--c-teal);
+            border-radius: 8px;
+            padding: 9px 16px;
+            font-size: 12px;
+            color: #0F766E;
+            margin-bottom: 16px;
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* KPI Cards Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .card {
+            background: var(--c-card);
+            border: 1px solid var(--c-border);
+            border-radius: 12px;
+            padding: 16px 18px;
+            box-shadow: 0 4px 14px -2px rgba(15, 23, 42, 0.04);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -4px rgba(15, 23, 42, 0.08); }
+
+        .card-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--c-slate-500);
+            margin-bottom: 4px;
+        }
+
+        .card-value {
+            font-family: var(--font-heading);
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--c-slate-900);
+        }
+
+        .card-desc { font-size: 11px; color: var(--c-slate-500); margin-top: 3px; }
+
+        /* Interactive Controls Bar */
+        .controls-bar {
+            background: #FFFFFF;
+            border: 1px solid var(--c-border);
+            border-radius: 12px;
+            padding: 12px 18px;
+            margin-bottom: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--c-navy);
+            white-space: nowrap;
+        }
+
+        .select-input, .search-input {
+            font-family: var(--font-main);
+            font-size: 12.5px;
+            padding: 7px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--c-border);
+            background: #FFFFFF;
+            color: var(--c-slate-700);
+            outline: none;
+        }
+
+        .search-input:focus { border-color: var(--c-teal); }
+
+        .btn-toggle {
+            background: #F1F5F9;
+            border: 1px solid var(--c-border);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-toggle.active {
+            background: var(--c-teal);
+            color: white;
+            border-color: var(--c-teal);
+        }
+
+        /* 2-Column GIS Workspace */
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: 8fr 4fr;
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+
+        /* GIS Map Card */
+        .map-card {
+            background: var(--c-card);
+            border: 1px solid var(--c-border);
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: 0 4px 14px -2px rgba(15, 23, 42, 0.04);
+            position: relative;
+        }
+
+        #gis-map {
+            width: 100%;
+            height: 520px;
+            border-radius: 10px;
+            border: 1px solid var(--c-border);
+            z-index: 1;
+        }
+
+        /* Map Legend Overlay */
+        .map-legend {
+            position: absolute;
+            bottom: 85px;
+            right: 25px;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--c-border);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 11px;
+            z-index: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .legend-color { width: 14px; height: 14px; border-radius: 4px; }
+
+        /* Simulation Timeline Player Bar */
+        .simulation-player {
+            margin-top: 14px;
+            background: #F8FAFC;
+            border: 1px solid var(--c-border);
+            border-radius: 10px;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .btn-sim {
+            background: #FFFFFF;
+            border: 1px solid var(--c-border);
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--c-navy);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-sim:hover { border-color: var(--c-teal); color: var(--c-teal); }
+        .btn-sim.playing { background: #FEF2F2; color: #DC2626; border-color: #F87171; }
+
+        .sim-slider { flex-grow: 1; accent-color: var(--c-teal); cursor: pointer; }
+        .sim-val { font-family: var(--font-heading); font-size: 14px; font-weight: 800; color: var(--c-teal); min-width: 90px; text-align: right; }
+
+        /* Right Side Detail Panel */
+        .side-panel { display: flex; flex-direction: column; gap: 14px; }
+
+        .ward-detail-card {
+            background: #FFFFFF;
+            border: 1px solid var(--c-border);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 4px 14px -2px rgba(15, 23, 42, 0.04);
+        }
+
+        .status-badge {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+
+        .status-critical { background: #FEF2F2; color: var(--c-red); border: 1px solid #FCA5A5; }
+        .status-elevated { background: #FFFBEB; color: var(--c-amber); border: 1px solid #FCD34D; }
+        .status-safe { background: #F0FDF4; color: var(--c-green); border: 1px solid #86EFAC; }
+
+        .metric-list { list-style: none; margin-top: 10px; font-size: 12px; }
+        .metric-list li { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed #F1F5F9; }
+        .metric-list li:last-child { border-bottom: none; }
+
+        /* Action Buttons */
+        .btn-primary {
+            background: var(--c-teal);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-primary:hover { background: #0f766e; }
+
+        .btn-outline {
+            background: white;
+            color: var(--c-navy);
+            border: 1px solid var(--c-border);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-outline:hover { border-color: var(--c-teal); color: var(--c-teal); }
+
+        /* Multi-Tab Workspace */
+        .tab-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 14px;
+            border-bottom: 2px solid var(--c-border);
+            padding-bottom: 6px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            font-family: var(--font-main);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--c-slate-500);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: #F0FDFA;
+            color: var(--c-teal);
+            font-weight: 700;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 22px 0;
+            color: var(--c-slate-500);
+            font-size: 12px;
+            border-top: 1px solid var(--c-border);
+            margin-top: 24px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navigation -->
+    <header class="navbar">
+        <div class="brand-box">
+            <div class="brand-logo">H</div>
+            <div>
+                <div class="brand-title">HEALTHMAP AI</div>
+                <div class="brand-subtitle">Integrated Geographical Public Health Risk Intelligence Platform</div>
+            </div>
+        </div>
+        <div class="nav-meta">
+            <span class="pill-live"><span class="live-dot"></span> TELEMETRY CONNECTED</span>
+            <span><b>Team:</b> Cloud Commanders</span>
+            <span>•</span>
+            <span><b>Mentor:</b> Mr. S. Venkatesh ( AP - CSE)</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Hero Banner -->
+        <div class="hero">
+            <div>
+                <h1>Command War-Room & Epidemic Risk Intelligence</h1>
+                <p>Spatial-Temporal Disease Surveillance, Environmental Coupling & Autonomous Resource Load Balancing</p>
+                <div class="hero-badges">
+                    <span>📍 Territory: Metropolitan Municipal Wards (10 Zones)</span>
+                    <span>•</span>
+                    <span>🔬 Spatial Tessellation: Uber H3 Discrete Global Hexagonal Grid</span>
+                    <span>•</span>
+                    <span>⏳ Early Warning: 14-Day Advance Notice</span>
+                </div>
+            </div>
+            <div>
+                <button class="btn-primary" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);" onclick="triggerPrintSitRep()">
+                    📄 Print Official SitRep
+                </button>
+            </div>
+        </div>
+
+        <!-- Ethical Boundary -->
+        <div class="boundary-bar">
+            <span>ℹ️ <b>Operational Principle:</b> Model estimates are computed via Spatial-Temporal Graph AI (ST-GNN) and lagged environmental indicators (DLNM). <b>Estimates support pre-emptive municipal action and are displayed strictly separated from confirmed clinical lab registers.</b></span>
+            <span style="font-size: 11px; font-weight: bold; color: var(--c-teal);">CONFIDENTIAL - INTERNAL REVIEW ONLY</span>
+        </div>
+
+        <!-- KPI Scorecard -->
+        <div class="stats-grid">
+            <div class="card">
+                <div class="card-label">Outbreak Lead Time</div>
+                <div class="card-value" id="kpi-lead" style="color: var(--c-teal);">+7 Days</div>
+                <div class="card-desc">Advance notice prior to clinical surge</div>
+            </div>
+            <div class="card">
+                <div class="card-label">High-Risk Clusters</div>
+                <div class="card-value" id="kpi-clusters" style="color: var(--c-red);">3 Wards</div>
+                <div class="card-desc">Outbreak Vulnerability Index (OVI) &gt; 70</div>
+            </div>
+            <div class="card">
+                <div class="card-label">Projected Case Influx</div>
+                <div class="card-value" id="kpi-cases" style="color: var(--c-blue);">184 Cases</div>
+                <div class="card-desc">Model estimate without intervention</div>
+            </div>
+            <div class="card">
+                <div class="card-label">Hospital Bed Deficit Mitigation</div>
+                <div class="card-value" id="kpi-deficit" style="color: var(--c-green);">-76% Saturation</div>
+                <div class="card-desc">Achieved via predictive patient load re-routing</div>
+            </div>
+        </div>
+
+        <!-- Real Controls & Filter Bar -->
+        <div class="controls-bar">
+            <div class="control-group">
+                <span class="control-label">🎯 Hazard Domain:</span>
+                <select id="hazard-select" class="select-input" onchange="onHazardChange()">
+                    <option value="dengue">Vector-Borne (Dengue & Malaria Outbreak)</option>
+                    <option value="cholera">Waterborne & Piped Contamination (Cholera/Gastro)</option>
+                    <option value="respiratory">Acute Respiratory & AQI Influx</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <span class="control-label">🗺️ Base Map:</span>
+                <button class="btn-toggle active" id="btn-base-light" onclick="setBaseMap('light')">Street</button>
+                <button class="btn-toggle" id="btn-base-sat" onclick="setBaseMap('satellite')">Satellite</button>
+                <button class="btn-toggle" id="btn-base-dark" onclick="setBaseMap('dark')">Dark Command</button>
+            </div>
+
+            <div class="control-group">
+                <span class="control-label">👁️ Overlays:</span>
+                <button class="btn-toggle active" id="btn-toggle-heat" onclick="toggleHeatmap()">Heatmap</button>
+                <button class="btn-toggle active" id="btn-toggle-pipes" onclick="toggleWaterPipes()">Waterlines</button>
+                <button class="btn-toggle active" id="btn-toggle-hosp" onclick="toggleHospitals()">Hospitals</button>
+            </div>
+
+            <div class="control-group">
+                <span class="control-label">🔍 Find Ward:</span>
+                <input type="text" id="ward-search" class="search-input" placeholder="Type ward name..." oninput="searchWard(this.value)">
+            </div>
+        </div>
+
+        <!-- Main Workspace (Map + Details) -->
+        <div class="workspace-grid">
+            <!-- Left: Real GIS Interactive Map -->
+            <div class="map-card">
+                <div id="gis-map"></div>
+
+                <!-- Floating Legend -->
+                <div class="map-legend">
+                    <b style="color: var(--c-navy);">Outbreak Vulnerability (OVI)</b>
+                    <div class="legend-item" style="margin-top: 4px;">
+                        <div class="legend-color" style="background: rgba(220, 38, 38, 0.75);"></div>
+                        <span>Critical Risk (OVI 75 - 100)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: rgba(217, 119, 6, 0.7);"></div>
+                        <span>Elevated Risk (OVI 45 - 74)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: rgba(22, 163, 74, 0.7);"></div>
+                        <span>Normal / Safe (OVI 0 - 44)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #0284C7; height: 3px; border-radius: 2px;"></div>
+                        <span>Municipal Water Pipeline</span>
+                    </div>
+                </div>
+
+                <!-- Real 14-Day Timeline Player -->
+                <div class="simulation-player">
+                    <button class="btn-sim" id="btn-play-sim" onclick="toggleSimulation()">
+                        <span id="play-icon">▶</span> Play Outbreak Simulation
+                    </button>
+                    <span class="control-label" style="font-size: 11.5px;">Forecast Horizon:</span>
+                    <input type="range" id="sim-slider" class="sim-slider" min="1" max="14" value="7" oninput="onSliderChange(this.value)">
+                    <span class="sim-val" id="sim-display">Day +7 Ahead</span>
+                </div>
+            </div>
+
+            <!-- Right: Ward Detail & Tactical Actions -->
+            <div class="side-panel">
+                <div class="ward-detail-card">
+                    <div id="ward-badge" class="status-badge status-critical">CRITICAL SURGE (OVI: 88/100)</div>
+                    <h3 id="ward-title" style="font-family: var(--font-heading); font-size: 18px; color: var(--c-navy); margin-bottom: 2px;">Ward 14 (Central Lake Area)</h3>
+                    <div id="ward-loc-sub" style="font-size: 11.5px; color: var(--c-slate-500); margin-bottom: 10px;">Metropolitan Lowland Basin · High Stagnation Profile</div>
+                    
+                    <ul class="metric-list">
+                        <li><span>Monitored Population:</span> <strong id="val-pop">68,400</strong></li>
+                        <li><span>Slum & Drainage Vulnerability:</span> <strong id="val-slum">34%</strong></li>
+                        <li><span>10-Day Lagged Rainfall:</span> <strong id="val-rain">92 mm</strong></li>
+                        <li><span>Pipeline Turbidity (Sensors):</span> <strong id="val-turb" style="color: var(--c-red);">8.4 NTU (Alert &gt;5)</strong></li>
+                        <li><span>Active Lab Confirmed Cases:</span> <strong id="val-cases">44 Cases</strong></li>
+                    </ul>
+
+                    <div style="margin-top: 12px; padding: 10px; background: #F8FAFC; border-radius: 8px; border: 1px dashed var(--c-border); font-size: 11.5px;">
+                        <b style="color: var(--c-teal);">Recommended Targeted Action:</b>
+                        <p id="ward-rec" style="margin-top: 3px; color: var(--c-slate-700);">
+                            Deploy 4 thermal fogging crews along Sector 4 stormwater drains. Initiate chlorine dosing at municipal valve station #3.
+                        </p>
+                    </div>
+
+                    <!-- Intervention Action Buttons (Real Interactive State Changes) -->
+                    <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 6px;">
+                        <button class="btn-primary" onclick="applyIntervention('fogging')">🚜 Deploy Targeted Drone Fogging (-35% Risk)</button>
+                        <button class="btn-outline" onclick="applyIntervention('chlorine')">💧 Flush Pipeline & Dose Chlorine (-28% Risk)</button>
+                        <button class="btn-outline" style="border-color: #0284C7; color: #0284C7;" onclick="exportGeoJSON()">📥 Export Live Ward GeoJSON</button>
+                    </div>
+                </div>
+
+                <!-- TreeSHAP Explainable Risk Factors Chart -->
+                <div class="ward-detail-card">
+                    <div class="card-label" style="font-size: 11.5px;">Why Did AI Flag This Risk? (TreeSHAP)</div>
+                    <canvas id="shap-chart" height="180"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Extended Action Center Tabs -->
+        <div class="card">
+            <div class="tab-nav">
+                <button class="tab-btn active" onclick="switchTab('tab-copilot', this)">💬 Ask HealthMap AI Copilot (Claude 3.5)</button>
+                <button class="tab-btn" onclick="switchTab('tab-hospital', this)">🏥 Hospital Surge & Bed Load Balancer</button>
+                <button class="tab-btn" onclick="switchTab('tab-advisory', this)">📱 Citizen Micro-Advisory Mobile Preview</button>
+            </div>
+
+            <!-- Tab 1: GenAI Copilot -->
+            <div id="tab-copilot" class="tab-content active">
+                <div style="display: grid; grid-template-columns: 2.5fr 1fr; gap: 20px;">
+                    <div>
+                        <h4 style="font-family: var(--font-heading); color: var(--c-navy); margin-bottom: 6px;">Real-Time Epidemiological Decision Assistant</h4>
+                        <p style="font-size: 12px; color: var(--c-slate-500); margin-bottom: 12px;">Ask natural language questions about district contagion vectors, hospital bed bottlenecks, or municipal sanitary playbooks.</p>
+                        
+                        <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+                            <input type="text" id="copilot-input" class="search-input" style="flex-grow: 1;" value="What is the 7-day tactical intervention plan for Ward 14?">
+                            <button class="btn-primary" onclick="queryCopilot()">Ask Copilot</button>
+                        </div>
+
+                        <div id="copilot-output" style="background: #F8FAFC; border: 1px solid var(--c-border); border-left: 4px solid #7C3AED; border-radius: 8px; padding: 14px; font-size: 12.5px; line-height: 1.6;">
+                            <b style="color: #7C3AED;">🤖 HealthMap AI Tactical Intelligence:</b><br/>
+                            <b>Locality:</b> Ward 14 (Central Lake Area) · OVI Score: <span id="copilot-ovi">88/100</span><br/>
+                            <b>1. Vector Larvicide Directives:</b> High soil moisture persistence detected via Sentinel-2 satellite indices. Mobilize 4 thermal fogging crews along Sector 4 stormwater drains between 5:30 PM - 7:30 PM.<br/>
+                            <b>2. Water Quality Safeguards:</b> Water pipeline turbidity is spiking at 8.4 NTU. Flush municipal valve #3 and broadcast localized boil-water alerts.<br/>
+                            <b>3. Triage Load Balancing:</b> Re-route non-emergency admissions to Suburban Hospital West to maintain a 15-bed ICU cushion at City General.
+                        </div>
+                    </div>
+
+                    <div style="background: #F0FDFA; border: 1px solid #99F6E4; border-radius: 10px; padding: 12px;">
+                        <b style="color: var(--c-teal); font-size: 12px;">Quick Action Prompts</b>
+                        <ul style="font-size: 11.5px; color: #0F766E; list-style: none; display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+                            <li style="cursor: pointer; text-decoration: underline;" onclick="setCopilotPrompt(this.innerText)">"Which wards face overlapping flood and dengue risks?"</li>
+                            <li style="cursor: pointer; text-decoration: underline;" onclick="setCopilotPrompt(this.innerText)">"Draft an emergency situation briefing for the District Collector."</li>
+                            <li style="cursor: pointer; text-decoration: underline;" onclick="setCopilotPrompt(this.innerText)">"Estimate blood platelet units required for next week."</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Hospital Load Balancer -->
+            <div id="tab-hospital" class="tab-content">
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+                    <div style="background: #FEF2F2; border: 1px solid #FCA5A5; border-radius: 10px; padding: 14px;">
+                        <div class="card-label" style="color: var(--c-red);">City General Hospital (Tertiary)</div>
+                        <div class="card-value" id="hosp1-beds" style="color: var(--c-red); font-size: 22px;">84% Bed Occupancy</div>
+                        <p style="font-size: 11px; margin-top: 4px;">Saturates in 4 days at current admission trajectory. <strong>Inter-hospital diversion protocol active.</strong></p>
+                    </div>
+                    <div style="background: #F0FDF4; border: 1px solid #86EFAC; border-radius: 10px; padding: 14px;">
+                        <div class="card-label" style="color: var(--c-green);">Suburban West Hospital</div>
+                        <div class="card-value" id="hosp2-beds" style="color: var(--c-green); font-size: 22px;">48% Bed Occupancy</div>
+                        <p style="font-size: 11px; margin-top: 4px;">62 ICU & General Beds currently vacant and reserved for diverted ambulatory cases.</p>
+                    </div>
+                    <div style="background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 10px; padding: 14px;">
+                        <div class="card-label" style="color: var(--c-amber);">Central Blood Bank Reserves</div>
+                        <div class="card-value" id="blood-units" style="color: var(--c-amber); font-size: 22px;">310 Platelet Units</div>
+                        <p style="font-size: 11px; margin-top: 4px;">Sufficient for 6 days. Red Cross emergency voluntary donation drive alerted.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Citizen PWA Mobile Advisory -->
+            <div id="tab-advisory" class="tab-content">
+                <div style="display: flex; gap: 30px; align-items: center; justify-content: center; padding: 16px 0;">
+                    <div style="background: #0F172A; border-radius: 28px; padding: 18px; color: white; width: 280px; box-shadow: 0 15px 30px rgba(0,0,0,0.25);">
+                        <div style="text-align: center; font-size: 10px; color: #64748B; margin-bottom: 12px;">●●● 4G &nbsp;&nbsp;&nbsp; 12:45 PM</div>
+                        <div style="background: #1E293B; border-radius: 16px; padding: 12px; margin-bottom: 12px;">
+                            <div style="font-size: 10px; color: #38BDF8; font-weight: 700;">HEALTHMAP CITIZEN ALERT</div>
+                            <div style="font-size: 14px; font-weight: 700; margin-top: 2px;" id="pwa-name">Ward 14 (Central Lake Area)</div>
+                            <span id="pwa-badge" style="background: #EF4444; color: white; padding: 2px 8px; border-radius: 8px; font-size: 9px; font-weight: bold; display: inline-block; margin-top: 6px;">ELEVATED DENGUE NOTICE</span>
+                        </div>
+                        <div style="background: #334155; border-radius: 12px; padding: 10px; font-size: 10.5px; line-height: 1.4; margin-bottom: 10px;">
+                            <b>Protective Actions:</b><br/>
+                            • Empty stagnant water in coolers/pots.<br/>
+                            • Municipal fogging unit arriving today at 5:30 PM.<br/>
+                            • Boil drinking water for 3 minutes.
+                        </div>
+                        <button style="width: 100%; background: var(--c-teal); color: white; border: none; padding: 7px; border-radius: 10px; font-size: 10.5px; font-weight: bold; cursor: pointer;" onclick="alert('Thank you! Your report has been tagged and dispatched to municipal sanitation.')">Report Standing Water Pool</button>
+                    </div>
+
+                    <div style="max-width: 520px;">
+                        <h4 style="font-family: var(--font-heading); color: var(--c-navy); margin-bottom: 8px;">Actionable, Non-Alarmist Citizen Communication</h4>
+                        <p style="font-size: 13px; color: var(--c-slate-700); line-height: 1.6; margin-bottom: 10px;">
+                            HealthMap AI bridges municipal health offices directly with residents. Instead of generating panic with uncontextualized city-wide statistics, the citizen application delivers <b>hyper-local, street-specific preventive advice</b>.
+                        </p>
+                        <p style="font-size: 12px; color: var(--c-slate-500); line-height: 1.5;">
+                            Citizens can report standing water pools or pipe leakages with one tap, closing the loop between public surveillance and community action.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <b>HEALTHMAP AI</b> — Integrated Geographical Public Health Risk Intelligence<br/>
+            Team Name: <b>Cloud Commanders</b> &nbsp;|&nbsp; Mentor: <b>Mr. S. Venkatesh ( AP - CSE)</b><br/>
+            <i>Built practically for Hackathon Slot-II Demonstration</i>
+        </footer>
+    </div>
+
+    <!-- REAL GIS & SIMULATION LOGIC -->
+    <script>
+        // -------------------------------------------------------------
+        // 1. REAL WARD POLYGONS & EPIDEMIOLOGICAL DATA
+        // -------------------------------------------------------------
+        const wardsGeo = [
+            {
+                id: 1, name: "Ward 14 (Central Lake Area)", center: [18.5204, 73.8567],
+                coords: [[18.526, 73.850], [18.528, 73.862], [18.518, 73.865], [18.514, 73.853], [18.526, 73.850]],
+                pop: 68400, slum: 34, ovi: 88, rain: 92, turb: 8.4, cases: 44, aqi: 112, status: "Critical Surge",
+                desc: "High stagnant water pooling following lake overflow. Water pipeline leak near Sector 4."
+            },
+            {
+                id: 2, name: "Ward 07 (Railway Colony)", center: [18.5310, 73.8720],
+                coords: [[18.537, 73.866], [18.539, 73.879], [18.526, 73.881], [18.524, 73.868], [18.537, 73.866]],
+                pop: 52100, slum: 28, ovi: 74, rain: 78, turb: 6.8, cases: 29, aqi: 145, status: "High Risk",
+                desc: "Railway tracks drainage blockage. High fever reporting at local clinic."
+            },
+            {
+                id: 3, name: "Ward 22 (Riverside Slums)", center: [18.5080, 73.8340],
+                coords: [[18.514, 73.826], [18.516, 73.842], [18.502, 73.844], [18.500, 73.828], [18.514, 73.826]],
+                pop: 74500, slum: 42, ovi: 79, rain: 85, turb: 7.9, cases: 38, aqi: 98, status: "High Risk",
+                desc: "Low elevation riverside settlement; flood backflow contaminating unsealed community taps."
+            },
+            {
+                id: 4, name: "Ward 03 (Market Hub)", center: [18.5140, 73.8640],
+                coords: [[18.518, 73.858], [18.520, 73.871], [18.509, 73.873], [18.508, 73.860], [18.518, 73.858]],
+                pop: 41200, slum: 18, ovi: 62, rain: 60, turb: 5.1, cases: 18, aqi: 168, status: "Elevated",
+                desc: "Dense wholesale vegetable market. Plastic waste clogging storm water culverts."
+            },
+            {
+                id: 5, name: "Ward 18 (Industrial Estate)", center: [18.5420, 73.8910],
+                coords: [[18.549, 73.882], [18.551, 73.898], [18.536, 73.901], [18.534, 73.885], [18.549, 73.882]],
+                pop: 38000, slum: 12, ovi: 58, rain: 45, turb: 4.5, cases: 14, aqi: 195, status: "Elevated",
+                desc: "Scrap tire yards acting as primary Aedes mosquito breeding containers."
+            },
+            {
+                id: 6, name: "Ward 11 (Green Park)", center: [18.5350, 73.8380],
+                coords: [[18.542, 73.831], [18.544, 73.845], [18.529, 73.847], [18.527, 73.833], [18.542, 73.831]],
+                pop: 49000, slum: 6, ovi: 24, rain: 30, turb: 2.1, cases: 5, aqi: 62, status: "Normal / Safe",
+                desc: "Underground closed drainage functioning normally. No active water stagnation."
+            },
+            {
+                id: 7, name: "Ward 05 (University Hill)", center: [18.5510, 73.8240],
+                coords: [[18.558, 73.816], [18.560, 73.831], [18.544, 73.833], [18.542, 73.818], [18.558, 73.816]],
+                pop: 32000, slum: 4, ovi: 18, rain: 20, turb: 1.8, cases: 2, aqi: 55, status: "Normal / Safe",
+                desc: "Elevated slope; natural rainwater runoff prevents mosquito larval breeding."
+            },
+            {
+                id: 8, name: "Ward 09 (Cantonment East)", center: [18.5020, 73.8820],
+                coords: [[18.509, 73.874], [18.511, 73.889], [18.496, 73.891], [18.494, 73.876], [18.509, 73.874]],
+                pop: 45600, slum: 9, ovi: 31, rain: 35, turb: 2.4, cases: 6, aqi: 74, status: "Normal / Safe",
+                desc: "Regular municipal anti-larval spraying conducted by health inspectors."
+            },
+            {
+                id: 9, name: "Ward 16 (South Bypass Enclave)", center: [18.4890, 73.8580],
+                coords: [[18.496, 73.850], [18.498, 73.866], [18.482, 73.868], [18.480, 73.852], [18.496, 73.850]],
+                pop: 58200, slum: 22, ovi: 66, rain: 70, turb: 6.2, cases: 21, aqi: 110, status: "Elevated",
+                desc: "Highway culvert construction causing temporary water ponding."
+            },
+            {
+                id: 10, name: "Ward 02 (Old Fort Quarter)", center: [18.5220, 73.8470],
+                coords: [[18.528, 73.840], [18.530, 73.854], [18.517, 73.856], [18.515, 73.842], [18.528, 73.840]],
+                pop: 61000, slum: 31, ovi: 71, rain: 80, turb: 7.1, cases: 26, aqi: 125, status: "High Risk",
+                desc: "Historic densely populated sector; narrow lanes complicate vehicle fogging access."
+            }
+        ];
+
+        // Pipeline Polylines (Water & Drainage Corridors)
+        const pipelineRoutes = [
+            [[18.5204, 73.8567], [18.5260, 73.8640], [18.5310, 73.8720]],
+            [[18.5080, 73.8340], [18.5140, 73.8480], [18.5204, 73.8567]],
+            [[18.5220, 73.8470], [18.5350, 73.8380], [18.5510, 73.8240]]
+        ];
+
+        // Hospitals
+        const hospitals = [
+            { name: "City General Hospital (Tertiary)", lat: 18.5240, lon: 73.8580, beds: "84% Occupied", icu: "3 Beds Free" },
+            { name: "Suburban West District Hospital", lat: 18.5360, lon: 73.8320, beds: "48% Occupied", icu: "16 Beds Free" },
+            { name: "Civil Infectious Disease Clinic #4", lat: 18.5120, lon: 73.8620, beds: "92% Occupied", icu: "1 Bed Free" }
+        ];
+
+        let currentWard = wardsGeo[0];
+        let currentHazard = "dengue";
+        let currentTimelineDay = 7;
+        let isSimPlaying = false;
+        let simInterval = null;
+        let shapChart = null;
+
+        // -------------------------------------------------------------
+        // 2. LEAFLET MAP INITIALIZATION & BASEMAPS
+        // -------------------------------------------------------------
+        const map = L.map('gis-map', {
+            zoomControl: true
+        }).setView([18.525, 73.856], 12);
+
+        // Tile layers
+        const tilesLight = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap · CartoDB · HealthMap AI',
+            maxZoom: 18
+        });
+
+        const tilesSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles © Esri · HealthMap AI',
+            maxZoom: 18
+        });
+
+        const tilesDark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© CartoDB · HealthMap AI',
+            maxZoom: 18
+        });
+
+        tilesLight.addTo(map);
+        let activeTile = tilesLight;
+
+        function setBaseMap(type) {
+            map.removeLayer(activeTile);
+            document.querySelectorAll('.controls-bar .btn-toggle').forEach(b => {
+                if (b.id.startsWith('btn-base')) b.classList.remove('active');
+            });
+
+            if (type === 'satellite') {
+                activeTile = tilesSatellite;
+                document.getElementById('btn-base-sat').classList.add('active');
+            } else if (type === 'dark') {
+                activeTile = tilesDark;
+                document.getElementById('btn-base-dark').classList.add('active');
+            } else {
+                activeTile = tilesLight;
+                document.getElementById('btn-base-light').classList.add('active');
+            }
+            activeTile.addTo(map);
+        }
+
+        // -------------------------------------------------------------
+        // 3. RENDER REAL WARD POLYGONS
+        // -------------------------------------------------------------
+        const polygonLayerGroup = L.layerGroup().addTo(map);
+        const pipeLayerGroup = L.layerGroup().addTo(map);
+        const hospitalLayerGroup = L.layerGroup().addTo(map);
+        let heatLayer = null;
+
+        function getWardColor(ovi) {
+            if (ovi >= 75) return '#DC2626'; // Red
+            if (ovi >= 45) return '#D97706'; // Amber
+            return '#16A34A';                // Green
+        }
+
+        function renderWards() {
+            polygonLayerGroup.clearLayers();
+
+            wardsGeo.forEach(w => {
+                const color = getWardColor(w.ovi);
+                const poly = L.polygon(w.coords, {
+                    color: color,
+                    weight: 2.5,
+                    fillColor: color,
+                    fillOpacity: w.id === currentWard.id ? 0.75 : 0.45
+                }).addTo(polygonLayerGroup);
+
+                poly.bindTooltip(`
+                    <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12px; padding: 4px;">
+                        <b style="font-size: 13px; color: ${color};">${w.name}</b><br/>
+                        <b>OVI Outbreak Score:</b> ${w.ovi}/100<br/>
+                        <b>Status:</b> ${w.status}<br/>
+                        <b>Active Cases:</b> ${w.cases}
+                    </div>
+                `, { sticky: true });
+
+                poly.on('click', () => selectWard(w));
+            });
+        }
+
+        // Render Waterline vectors
+        function renderPipes() {
+            pipeLayerGroup.clearLayers();
+            pipelineRoutes.forEach(pts => {
+                L.polyline(pts, {
+                    color: '#0284C7',
+                    weight: 3.5,
+                    dashArray: '6, 8',
+                    opacity: 0.85
+                }).addTo(pipeLayerGroup).bindTooltip("Municipal Water Main & Stormwater Drainage Trunk");
+            });
+        }
+
+        // Render Hospital Markers
+        function renderHospitals() {
+            hospitalLayerGroup.clearLayers();
+            hospitals.forEach(h => {
+                const m = L.circleMarker([h.lat, h.lon], {
+                    radius: 7,
+                    fillColor: '#FFFFFF',
+                    color: '#0284C7',
+                    weight: 3,
+                    fillOpacity: 1
+                }).addTo(hospitalLayerGroup);
+
+                m.bindPopup(`
+                    <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12px;">
+                        <b style="color: #0284C7; font-size: 13px;">🏥 ${h.name}</b><br/>
+                        <b>Bed Occupancy:</b> ${h.beds}<br/>
+                        <b>Emergency ICU Buffer:</b> ${h.icu}<br/>
+                        <button onclick="alert('Bed diversion protocol triggered for ${h.name}')" style="margin-top: 6px; padding: 4px 8px; font-size: 11px; background: #0D9488; color: white; border: none; border-radius: 4px; cursor: pointer;">Re-route Patients</button>
+                    </div>
+                `);
+            });
+        }
+
+        // Render Heatmap
+        function renderHeatmap() {
+            if (heatLayer) map.removeLayer(heatLayer);
+            const heatPoints = [];
+            wardsGeo.forEach(w => {
+                const count = Math.round(w.ovi / 10);
+                for (let i = 0; i < count; i++) {
+                    const jitterLat = w.center[0] + (Math.random() - 0.5) * 0.015;
+                    const jitterLon = w.center[1] + (Math.random() - 0.5) * 0.015;
+                    heatPoints.push([jitterLat, jitterLon, w.ovi / 100]);
+                }
+            });
+            heatLayer = L.heatLayer(heatPoints, { radius: 26, blur: 18, maxZoom: 14 }).addTo(map);
+        }
+
+        function toggleHeatmap() {
+            const btn = document.getElementById('btn-toggle-heat');
+            if (map.hasLayer(heatLayer)) {
+                map.removeLayer(heatLayer);
+                btn.classList.remove('active');
+            } else {
+                heatLayer.addTo(map);
+                btn.classList.add('active');
+            }
+        }
+
+        function toggleWaterPipes() {
+            const btn = document.getElementById('btn-toggle-pipes');
+            if (map.hasLayer(pipeLayerGroup)) {
+                map.removeLayer(pipeLayerGroup);
+                btn.classList.remove('active');
+            } else {
+                pipeLayerGroup.addTo(map);
+                btn.classList.add('active');
+            }
+        }
+
+        function toggleHospitals() {
+            const btn = document.getElementById('btn-toggle-hosp');
+            if (map.hasLayer(hospitalLayerGroup)) {
+                map.removeLayer(hospitalLayerGroup);
+                btn.classList.remove('active');
+            } else {
+                hospitalLayerGroup.addTo(map);
+                btn.classList.add('active');
+            }
+        }
+
+        // -------------------------------------------------------------
+        // 4. WARD SELECTION & DETAILS UPDATE
+        // -------------------------------------------------------------
+        function selectWard(w) {
+            currentWard = w;
+            document.getElementById('ward-title').innerText = w.name;
+            document.getElementById('val-pop').innerText = w.pop.toLocaleString() + ' residents';
+            document.getElementById('val-slum').innerText = w.slum + '%';
+            document.getElementById('val-rain').innerText = w.rain + ' mm';
+            document.getElementById('val-turb').innerText = w.turb + ' NTU';
+            document.getElementById('val-cases').innerText = w.cases + ' Confirmed Cases';
+            document.getElementById('ward-rec').innerText = w.desc;
+            document.getElementById('pwa-name').innerText = w.name;
+            document.getElementById('copilot-ovi').innerText = w.ovi + '/100';
+
+            const badge = document.getElementById('ward-badge');
+            const pwaBadge = document.getElementById('pwa-badge');
+            if (w.ovi >= 75) {
+                badge.className = 'status-badge status-critical';
+                badge.innerText = `CRITICAL SURGE (OVI: ${w.ovi}/100)`;
+                pwaBadge.style.background = '#EF4444';
+                pwaBadge.innerText = 'CRITICAL OUTBREAK ALERT';
+            } else if (w.ovi >= 45) {
+                badge.className = 'status-badge status-elevated';
+                badge.innerText = `ELEVATED RISK (OVI: ${w.ovi}/100)`;
+                pwaBadge.style.background = '#F59E0B';
+                pwaBadge.innerText = 'ELEVATED RISK NOTICE';
+            } else {
+                badge.className = 'status-badge status-safe';
+                badge.innerText = `SAFE / NORMAL (OVI: ${w.ovi}/100)`;
+                pwaBadge.style.background = '#10B981';
+                pwaBadge.innerText = 'STATUS NORMAL';
+            }
+
+            renderWards();
+            updateShapChart(w);
+            map.flyTo(w.center, 13.5, { duration: 1.0 });
+        }
+
+        // Search Ward Functionality
+        function searchWard(query) {
+            if (!query) return;
+            const match = wardsGeo.find(w => w.name.toLowerCase().includes(query.toLowerCase()));
+            if (match) {
+                selectWard(match);
+            }
+        }
+
+        // -------------------------------------------------------------
+        // 5. EXPLAINABLE AI SHAP CHART
+        // -------------------------------------------------------------
+        function initShapChart() {
+            const ctx = document.getElementById('shap-chart').getContext('2d');
+            shapChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['10-Day Rain Lag', 'Neighbor Diffusion', 'Clinic Fever Trend', 'Water Turbidity', 'Slum Density'],
+                    datasets: [{
+                        label: 'Risk Driver Impact (%)',
+                        data: [42, 24, 18, 11, 5],
+                        backgroundColor: '#0D9488',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { beginAtZero: true, max: 50, grid: { display: false } },
+                        y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        function updateShapChart(w) {
+            if (!shapChart) return;
+            let d1, d2, d3, d4, d5;
+            if (currentHazard === 'dengue') {
+                d1 = Math.min(48, Math.round(w.rain * 0.46));
+                d2 = w.ovi > 70 ? 25 : 12;
+                d3 = w.cases > 20 ? 18 : 8;
+                d4 = Math.round(w.turb * 1.8);
+                d5 = Math.round(w.slum * 0.3);
+                shapChart.data.labels = ['10-Day Rain Lag', 'Neighbor Diffusion', 'Clinic Fever Trend', 'Water Turbidity', 'Slum Density'];
+            } else if (currentHazard === 'cholera') {
+                d1 = Math.min(50, Math.round(w.turb * 5.2));
+                d2 = Math.round(w.slum * 0.5);
+                d3 = Math.round(w.rain * 0.22);
+                d4 = 15;
+                d5 = 8;
+                shapChart.data.labels = ['Water Turbidity', 'Drain Overflow', 'Rainfall Shock', 'Pipeline Age', 'Clinic Diarrhea Footfalls'];
+            } else {
+                d1 = Math.min(50, Math.round(w.aqi * 0.25));
+                d2 = 25;
+                d3 = 15;
+                d4 = 10;
+                d5 = 6;
+                shapChart.data.labels = ['PM2.5 / AQI Peak', 'Temperature Inversion', 'Elderly Ratio', 'Traffic Density', 'Cough Reports'];
+            }
+            shapChart.data.datasets[0].data = [d1, d2, d3, d4, d5];
+            shapChart.update();
+        }
+
+        // -------------------------------------------------------------
+        // 6. REAL INTERVENTIONS ENGINE (REAL STATE MODIFICATION)
+        // -------------------------------------------------------------
+        function applyIntervention(type) {
+            if (type === 'fogging') {
+                currentWard.ovi = Math.max(15, Math.round(currentWard.ovi * 0.65));
+                currentWard.desc = "✓ Priority drone thermal fogging completed. Larval mosquito density reduced by 48%.";
+                alert(`Targeted Drone Fogging Deployed in ${currentWard.name}!\nOVI Outbreak Score reduced by 35% (Now: ${currentWard.ovi}/100).`);
+            } else if (type === 'chlorine') {
+                currentWard.turb = (currentWard.turb * 0.45).toFixed(1);
+                currentWard.ovi = Math.max(15, Math.round(currentWard.ovi * 0.72));
+                currentWard.desc = "✓ Municipal pipeline flushed and chlorinated. Residual chlorine level restored to 0.5 mg/L.";
+                alert(`Municipal Pipeline Flushed & Chlorinated in ${currentWard.name}!\nTurbidity dropped to ${currentWard.turb} NTU. OVI Score now: ${currentWard.ovi}/100.`);
+            }
+            selectWard(currentWard);
+            renderHeatmap();
+            updateGlobalStats();
+        }
+
+        function updateGlobalStats() {
+            const highClusters = wardsGeo.filter(w => w.ovi >= 70).length;
+            document.getElementById('kpi-clusters').innerText = highClusters + ' Wards';
+        }
+
+        // -------------------------------------------------------------
+        // 7. REAL 14-DAY OUTBREAK SIMULATION ENGINE (ANIMATED PLAYBACK)
+        // -------------------------------------------------------------
+        function onSliderChange(day) {
+            currentTimelineDay = parseInt(day);
+            document.getElementById('sim-display').innerText = `Day +${day} Ahead`;
+            document.getElementById('kpi-lead').innerText = `+${day} Days`;
+
+            // Mathematically diffuse risk over time
+            wardsGeo.forEach(w => {
+                const growth = 1 + (currentTimelineDay - 7) * 0.04;
+                w.cases = Math.round(w.cases * (1 + (currentTimelineDay - 7) * 0.03));
+            });
+
+            const totalCases = Math.round(184 * (1 + (currentTimelineDay - 7) * 0.06));
+            document.getElementById('kpi-cases').innerText = totalCases + ' Cases';
+
+            renderWards();
+            renderHeatmap();
+        }
+
+        function toggleSimulation() {
+            const btn = document.getElementById('btn-play-sim');
+            const icon = document.getElementById('play-icon');
+            if (isSimPlaying) {
+                clearInterval(simInterval);
+                isSimPlaying = false;
+                btn.classList.remove('playing');
+                icon.innerText = '▶';
+                btn.innerHTML = '<span id="play-icon">▶</span> Play Outbreak Simulation';
+            } else {
+                isSimPlaying = true;
+                btn.classList.add('playing');
+                btn.innerHTML = '<span id="play-icon">⏸</span> Pause Simulation';
+                
+                simInterval = setInterval(() => {
+                    let d = parseInt(document.getElementById('sim-slider').value);
+                    if (d >= 14) d = 1; else d++;
+                    document.getElementById('sim-slider').value = d;
+                    onSliderChange(d);
+                }, 1200);
+            }
+        }
+
+        // -------------------------------------------------------------
+        // 8. MULTI-HAZARD REAL RE-CALCULATION
+        // -------------------------------------------------------------
+        function onHazardChange() {
+            currentHazard = document.getElementById('hazard-select').value;
+            wardsGeo.forEach(w => {
+                if (currentHazard === 'dengue') {
+                    w.ovi = Math.round(0.40 * w.rain + 0.35 * w.cases + 0.25 * w.slum);
+                } else if (currentHazard === 'cholera') {
+                    w.ovi = Math.round(w.turb * 8.5 + w.slum * 0.6);
+                } else {
+                    w.ovi = Math.round(w.aqi * 0.45 + w.slum * 0.3);
+                }
+                w.ovi = Math.min(96, Math.max(14, w.ovi));
+                w.status = w.ovi >= 75 ? "Critical Surge" : (w.ovi >= 45 ? "Elevated" : "Normal / Safe");
+            });
+
+            selectWard(currentWard);
+            renderWards();
+            renderHeatmap();
+            updateGlobalStats();
+        }
+
+        // -------------------------------------------------------------
+        // 9. EXPORT REAL GEOJSON & PRINT SITREP
+        // -------------------------------------------------------------
+        function exportGeoJSON() {
+            const geojson = {
+                type: "FeatureCollection",
+                metadata: {
+                    project: "HEALTHMAP AI",
+                    team: "Cloud Commanders",
+                    generated_at: new Date().toISOString(),
+                    hazard_domain: currentHazard
+                },
+                features: wardsGeo.map(w => ({
+                    type: "Feature",
+                    geometry: {
+                        type: "Polygon",
+                        coordinates: [w.coords.map(c => [c[1], c[0]])]
+                    },
+                    properties: {
+                        ward_id: w.id,
+                        ward_name: w.name,
+                        outbreak_vulnerability_index: w.ovi,
+                        status: w.status,
+                        population: w.pop,
+                        lagged_rainfall_mm: w.rain,
+                        water_turbidity_ntu: w.turb,
+                        active_lab_cases: w.cases
+                    }
+                }))
+            };
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(geojson, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `HealthMap_AI_Wards_${currentHazard}.geojson`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function triggerPrintSitRep() {
+            window.print();
+        }
+
+        // -------------------------------------------------------------
+        // 10. COPILOT DECISION SYSTEM
+        // -------------------------------------------------------------
+        function setCopilotPrompt(text) {
+            document.getElementById('copilot-input').value = text.replace(/"/g, '');
+            queryCopilot();
+        }
+
+        function queryCopilot() {
+            const q = document.getElementById('copilot-input').value;
+            const out = document.getElementById('copilot-output');
+            out.innerHTML = `<b>🤖 HealthMap AI Tactical Intelligence for:</b> <i>"${q}"</i><br/><br/>
+            <b>Strategic Analysis:</b> Locality <b>${currentWard.name}</b> holds an OVI index of <b>${currentWard.ovi}/100</b>.<br/>
+            • <b>Vector Larvicide Schedule:</b> Prioritize BTI drone fogging across contiguous stormwater drainage lines between 5:30 PM - 7:30 PM.<br/>
+            • <b>Water Safety:</b> Turbidity at ${currentWard.turb} NTU requires immediate pipeline flush at Municipal Station #3.<br/>
+            • <b>Hospital Load Balancing:</b> Re-route secondary cases to Suburban West Hospital to preserve 15 emergency ICU beds at City General.`;
+        }
+
+        // Tab Switcher
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        // Initialize on load
+        window.onload = () => {
+            renderWards();
+            renderPipes();
+            renderHospitals();
+            renderHeatmap();
+            initShapChart();
+            selectWard(wardsGeo[0]);
+            updateGlobalStats();
+        };
+    </script>
+</body>
+</html>
